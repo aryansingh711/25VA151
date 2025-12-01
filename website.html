@@ -1,0 +1,268 @@
+/*
+Geochem Bioscience
+React single-file app (App.jsx)
+
+How to use:
+1. Create a new React app (recommended):
+   npx create-react-app geochem-bioscience
+2. Install Bootstrap:
+   npm install bootstrap
+3. Replace src/App.js (or src/App.jsx) with this file's content.
+4. In src/index.js import Bootstrap CSS if not already:
+   import 'bootstrap/dist/css/bootstrap.min.css';
+5. Start the dev server:
+   npm start
+
+Formspree (Contact form):
+- Sign up at https://formspree.io and create a form to get a form endpoint like
+  https://formspree.io/f/abcdxyz
+- Replace the FORMSPREE_ENDPOINT constant below with your Formspree endpoint.
+
+This file is a single React component with inline styles (injected) and uses
+Bootstrap classes for layout. It mirrors the structure and feel inspired by
+aaaent.in but with original content and the name "Geochem Bioscience".
+*/
+
+import React, { useState, useEffect } from 'react';
+
+// Replace this with your real Formspree endpoint after creating a form there.
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID';
+
+export default function App() {
+  const [formState, setFormState] = useState({ name: '', email: '', phone: '', message: '' });
+  const [status, setStatus] = useState({ loading: false, success: null, error: null });
+
+  useEffect(() => {
+    // Inject small custom CSS so the component is self-contained visually.
+    const css = `
+      .hero {
+        background: linear-gradient(90deg, #0b3d91 0%, #1e6fbf 100%);
+        color: white;
+        padding: 60px 0;
+      }
+      .hero h1 { font-weight: 700; letter-spacing: 0.5px; }
+      .product-card { border-radius: 6px; }
+      .contact-card { border-radius: 6px; }
+      .nav-brand { font-weight: 700; }
+      footer { background: #0b3d91; color: white; padding: 30px 0; }
+    `;
+    const style = document.createElement('style');
+    style.appendChild(document.createTextNode(css));
+    document.head.appendChild(style);
+    return () => { document.head.removeChild(style); };
+  }, []);
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setFormState(prev => ({ ...prev, [name]: value }));
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setStatus({ loading: true, success: null, error: null });
+
+    // Basic front-end validation
+    if (!formState.name || !formState.email || !formState.message) {
+      setStatus({ loading: false, success: null, error: 'Please fill name, email and message.' });
+      return;
+    }
+
+    try {
+      const res = await fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formState.name,
+          email: formState.email,
+          phone: formState.phone,
+          message: formState.message
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setStatus({ loading: false, success: 'Message sent — we will get back to you soon!', error: null });
+        setFormState({ name: '', email: '', phone: '', message: '' });
+      } else {
+        // Formspree returns errors array sometimes
+        const err = data?.errors?.map(e => e.message).join(', ') || data?.message || 'Submission failed.';
+        setStatus({ loading: false, success: null, error: err });
+      }
+    } catch (err) {
+      setStatus({ loading: false, success: null, error: 'Network error. Please try again later.' });
+    }
+  }
+
+  return (
+    <div>
+      {/* NAVBAR */}
+      <nav className="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div className="container">
+          <a className="navbar-brand nav-brand" href="#home">Geochem Bioscience</a>
+          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <span className="navbar-toggler-icon" />
+          </button>
+          <div className="collapse navbar-collapse" id="navMenu">
+            <ul className="navbar-nav ms-auto">
+              <li className="nav-item"><a className="nav-link" href="#home">Home</a></li>
+              <li className="nav-item"><a className="nav-link" href="#products">Products</a></li>
+              <li className="nav-item"><a className="nav-link" href="#contact">Contact</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      {/* HERO */}
+      <header id="home" className="hero">
+        <div className="container text-center">
+          <div className="row align-items-center">
+            <div className="col-lg-7">
+              <h1 className="display-5">Geochem Bioscience</h1>
+              <p className="lead mt-3">Precision instruments &amp; material solutions for geological and environmental research.</p>
+              <p className="mt-4">
+                <a href="#products" className="btn btn-light btn-lg me-2">Our Products</a>
+                <a href="#contact" className="btn btn-outline-light btn-lg">Contact Us</a>
+              </p>
+            </div>
+            <div className="col-lg-5 d-none d-lg-block">
+              <div className="card shadow-sm">
+                <img src="https://images.unsplash.com/photo-1556761175-129418cb2dfe?auto=format&fit=crop&w=800&q=60" alt="banner" className="card-img-top" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* PRODUCTS */}
+      <main className="py-5">
+        <div className="container">
+          <section id="products" className="mb-5">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h2 className="h3">Products</h2>
+              <small className="text-muted">High-quality instruments &amp; materials</small>
+            </div>
+
+            <div className="row g-4">
+              {[
+                { id: 'A', title: 'Product A', desc: 'Advanced geochemical analysis solutions for research and industry.', link: '#' },
+                { id: 'B', title: 'Product B', desc: 'Innovative bio-lab materials designed for reliability and precision.', link: '#' },
+                { id: 'C', title: 'Product C', desc: 'Field instruments for geological and environmental monitoring.', link: '#' },
+                { id: 'D', title: 'Product D', desc: 'Custom scientific equipment built for high performance.', link: '#' }
+              ].map(p => (
+                <div className="col-sm-6 col-md-3" key={p.id}>
+                  <div className="card product-card h-100 shadow-sm">
+                    <div className="card-body d-flex flex-column">
+                      <h5 className="card-title">{p.title}</h5>
+                      <p className="card-text text-muted">{p.desc}</p>
+                      <div className="mt-auto">
+                        <a href={p.link} className="btn btn-primary btn-sm">View</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Company info / about */}
+          <section className="mb-5">
+            <h2 className="h3">About Geochem Bioscience</h2>
+            <p className="text-muted">We deliver scientific instruments, materials and field equipment tailored for geoscience and environmental labs. Our products are designed with precision, durability and regulatory compliance in mind.</p>
+
+            <div className="row mt-4">
+              <div className="col-md-4">
+                <div className="card p-3 contact-card h-100">
+                  <h6>Address</h6>
+                  <p className="mb-0">123 Innovation Park, New Delhi, India</p>
+                </div>
+              </div>
+              <div className="col-md-4">
+                <div className="card p-3 contact-card h-100">
+                  <h6>Email</h6>
+                  <p className="mb-0">contact@geochembioscience.com</p>
+                </div>
+              </div>
+              <div className="col-md-4">
+                <div className="card p-3 contact-card h-100">
+                  <h6>Phone</h6>
+                  <p className="mb-0">+91-9876543210</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* CONTACT */}
+          <section id="contact" className="mb-5">
+            <h2 className="h3">Contact Us</h2>
+            <div className="row">
+              <div className="col-md-6">
+                <div className="card p-4 shadow-sm">
+                  <h5>Send an Inquiry</h5>
+                  <p className="text-muted">Fill the form and we will reply within 1-2 business days.</p>
+
+                  <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                      <label className="form-label">Name</label>
+                      <input name="name" value={formState.name} onChange={handleChange} className="form-control" placeholder="Your name" />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Email</label>
+                      <input name="email" value={formState.email} onChange={handleChange} type="email" className="form-control" placeholder="you@example.com" />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Phone</label>
+                      <input name="phone" value={formState.phone} onChange={handleChange} className="form-control" placeholder="Optional" />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Message</label>
+                      <textarea name="message" value={formState.message} onChange={handleChange} className="form-control" rows="5" placeholder="Tell us about your requirement..."></textarea>
+                    </div>
+                    {status.error && <div className="alert alert-danger">{status.error}</div>}
+                    {status.success && <div className="alert alert-success">{status.success}</div>}
+                    <div>
+                      <button className="btn btn-primary" type="submit" disabled={status.loading}>
+                        {status.loading ? 'Sending...' : 'Send Message'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+
+              <div className="col-md-6">
+                <div className="card p-4 shadow-sm h-100">
+                  <h5>Office</h5>
+                  <p className="mb-1"><strong>Address:</strong> 123 Innovation Park, New Delhi, India</p>
+                  <p className="mb-1"><strong>Email:</strong> contact@geochembioscience.com</p>
+                  <p className="mb-1"><strong>Phone:</strong> +91-9876543210</p>
+
+                  <div className="mt-3">
+                    <iframe
+                      title="office-map"
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14001.123456789!2d77.2090!3d28.6139!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjjCsDMyJzAwLjAiTiA3N8KwMTInMDcuMCJF!5e0!3m2!1sen!2sin!4v0000000000000"
+                      width="100%" height="250" style={{ border: 0 }} allowFullScreen="" loading="lazy"></iframe>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+
+      <footer>
+        <div className="container text-center">
+          <div className="row align-items-center">
+            <div className="col-md-6 text-md-start">
+              <p className="mb-0">&copy; {new Date().getFullYear()} Geochem Bioscience. All rights reserved.</p>
+            </div>
+            <div className="col-md-6 text-md-end">
+              <small>Designed and developed with care.</small>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  );
+}
